@@ -78,7 +78,8 @@ const int xHallPin = A0;
 const int yHallPin = A1;
 const int zHallPin = A2;
 const int pitchHallPin = A4;
-const int rollHallPin = A5 const int yawHallPin = A3;
+const int rollHallPin = A5;
+const int yawHallPin = A3;
 
 // Raw sensor value ranges for X, Y movement and Z rotation
 // X - range
@@ -141,7 +142,6 @@ void loop()
     float roll = mapping_function(rollHallValue, rollRawMin, rollRawMax, rollZero, deadZoneSize, curveCoefficient);
     float yaw = mapping_function(yawHallValue, yawRawMin, yawRawMax, yawZero, deadZoneSize, curveCoefficient);
 
-    debug_print(xHallValue, x);
 
     // [x, y, z, pitch, roll, yaw]
     float thrust[6] = {x, y, z, pitch, roll, yaw};
