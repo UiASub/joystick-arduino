@@ -133,7 +133,7 @@ void loop()
     int rollHallValue = analogRead(rollHallPin);
     int yawHallValue = analogRead(yawHallPin);
 
-    float x = mapping_funciton(xHallValue, xRawMin, xRawMax, xZero, deadZoneSize, curveCoefficient);
+    float x = mapping_function(xHallValue, xRawMin, xRawMax, xZero, deadZoneSize, curveCoefficient);
     float y = mapping_function(yHallValue, yRawMin, yRawMax, yZero, deadZoneSize, curveCoefficient);
     float z = mapping_function(zHallValue, zRawMin, zRawMax, zZero, deadZoneSize, curveCoefficient);
 
