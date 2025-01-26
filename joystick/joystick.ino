@@ -142,7 +142,6 @@ void loop()
     float roll = mapping_function(rollHallValue, rollRawMin, rollRawMax, rollZero, deadZoneSize, curveCoefficient);
     float yaw = mapping_function(yawHallValue, yawRawMin, yawRawMax, yawZero, deadZoneSize, curveCoefficient);
 
-
     // [x, y, z, pitch, roll, yaw]
     float thrust[6] = {x, y, z, pitch, roll, yaw};
 
@@ -160,5 +159,5 @@ void loop()
     serializeJson(doc, Serial);
     Serial.println(); // Ensure newline for Python to read properly
 
-    delay(200);
+    delay(1);
 }
