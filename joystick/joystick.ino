@@ -142,5 +142,8 @@ void loop()
 
     debug_print(xHallValue, x);
 
+    // [x, y, z, pitch, roll, yaw]
+    float thrust[6] = {x, y, z, pitch, roll, yaw};
+
     delay(200);
 }
