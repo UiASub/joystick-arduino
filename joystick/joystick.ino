@@ -133,6 +133,7 @@ void setup()
 
 void loop()
 {
+<<<<<<< HEAD
   // Controll gain
   if (digitalRead(pinUp) == LOW) {
     gain = min(gain + step, maxGain);
@@ -182,4 +183,43 @@ void loop()
   Serial.println(); // Ensure newline for Python to read properly
 
   delay(200);
+=======
+    // X, Y and Z movement
+    // Read the Hall effect sensor value
+    int xHallValue = analogRead(xHallPin);
+    int yHallValue = analogRead(yHallPin);
+    int zHallValue = analogRead(zHallPin);
+
+    // Pitch, Roll and Yaw rotation
+    int pitchHallValue = analogRead(pitchHallPin);
+    int rollHallValue = analogRead(rollHallPin);
+    int yawHallValue = analogRead(yawHallPin);
+
+    float x = mapping_function(xHallValue, xRawMin, xRawMax, xZero, deadZoneSize, curveCoefficient);
+    float y = mapping_function(yHallValue, yRawMin, yRawMax, yZero, deadZoneSize, curveCoefficient);
+    float z = mapping_function(zHallValue, zRawMin, zRawMax, zZero, deadZoneSize, curveCoefficient);
+
+    float pitch = mapping_function(pitchHallValue, pitchRawMin, pitchRawMax, pitchZero, deadZoneSize, curveCoefficient);
+    float roll = mapping_function(rollHallValue, rollRawMin, rollRawMax, rollZero, deadZoneSize, curveCoefficient);
+    float yaw = mapping_function(yawHallValue, yawRawMin, yawRawMax, yawZero, deadZoneSize, curveCoefficient);
+
+    // [x, y, z, pitch, roll, yaw]
+    float thrust[6] = {x, y, z, pitch, roll, yaw};
+
+    // Create a JSON object
+    StaticJsonDocument<200> doc;
+    JsonArray thrustArray = doc.createNestedArray("Thrust");
+
+    // Add elements to the array
+    for (int i = 0; i < 6; i++)
+    {
+        thrustArray.add(thrust[i]);
+    }
+
+    // Serialize JSON to a string and send it
+    serializeJson(doc, Serial);
+    Serial.println(); // Ensure newline for Python to read properly
+
+    delay(1);
+>>>>>>> 0d0a4053f32de99185b8786305c82a04821edbd7
 }
