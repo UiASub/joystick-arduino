@@ -1,4 +1,5 @@
 #include <math.h>
+#include <ArduinoJson.h>
 
 float mapping_function(
     int measure_val,
@@ -116,7 +117,7 @@ const int deadZoneSize = 5;
 
 void setup()
 {
-    Serial.begin(9600);
+    Serial.begin(115200);
 }
 
 void loop()
@@ -144,6 +145,20 @@ void loop()
 
     // [x, y, z, pitch, roll, yaw]
     float thrust[6] = {x, y, z, pitch, roll, yaw};
+
+    // Create a JSON object
+    StaticJsonDocument<200> doc;
+    JsonArray thrustArray = doc.createNestedArray("Thrust");
+
+    // Add elements to the array
+    for (int i = 0; i < 6; i++)
+    {
+        thrustArray.add(thrust[i]);
+    }
+
+    // Serialize JSON to a string and send it
+    serializeJson(doc, Serial);
+    Serial.println(); // Ensure newline for Python to read properly
 
     delay(200);
 }
