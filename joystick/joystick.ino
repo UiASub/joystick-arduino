@@ -47,12 +47,12 @@ void debug_print(int measure_val, float mapped_val)
 const int xHallPin = A1;
 const int yHallPin = A0;
 const int zHallPin = A3;
-const int pitchHallPin = A4;
-const int rollHallPin = A5;
+const int pitchHallPin = A5;
+const int rollHallPin = A4;
 const int yawHallPin = A2;
 
-const int pinUp = 3;
-const int pinDown = 5;
+const int pinUp = 8;
+const int pinDown = 12;
 int gain = 0;
 const int step = 10;
 const int maxGain = 100;
@@ -66,45 +66,72 @@ const int button_surface_pin = 2;
 int button_surface = 0;
 bool last_button_surface_state = HIGH;
 
-const float curveCoefficient = 2.0;
+const int button_1_pin = 7;
+int button_1_state = 0;
+
+const int button_inn_pin = 13;
+int button_inn = 0;
+
+const float curveCoefficient = 2.2;
 const int deadZoneSize = 8;
 
+// Debounce for buttons
+unsigned long lastDebounceTime = 0;
+const unsigned long debounceDelay = 50;  // 50ms debounce
+
 // Global mapping values for easier configuration
-const int xRawMin = 220, xRawMax = 445, xZero = 340;
+const int xRawMin = 219, xRawMax = 460, xZero = 320;
 const int yRawMin = 545, yRawMax = 740, yZero = 640;
 const int zRawMin = 0, zRawMax = 1020, zZero = 515;
-const int pitchRawMin = 0, pitchRawMax = 1023, pitchZero = 503;
-const int rollRawMin = 0, rollRawMax = 1023, rollZero = 518;
-const int yawRawMin = 435, yawRawMax = 573, yawZero = 503;
+const int pitchRawMin = 0, pitchRawMax = 1023, pitchZero = 518;
+const int rollRawMin = 0, rollRawMax = 1023, rollZero = 504;
+const int yawRawMin = 460, yawRawMax = 573, yawZero = 505;
 
 void setup()
 {
-    Serial.begin(115200);
-    pinMode(pinUp, INPUT_PULLUP);
-    pinMode(pinDown, INPUT_PULLUP);
-    pinMode(button_surface_pin, INPUT_PULLUP);
-    pinMode(button_openclose_pin, INPUT_PULLUP);
+  Serial.begin(115200);
+  pinMode(pinUp, INPUT_PULLUP);
+  pinMode(pinDown, INPUT_PULLUP);
+  pinMode(button_surface_pin, INPUT_PULLUP);
+  pinMode(button_openclose_pin, INPUT_PULLUP);
+  pinMode(button_1_pin, INPUT_PULLUP);
+  pinMode(button_inn_pin, INPUT_PULLUP);
 }
 
 void loop()
 {
+  // Gain controll
+    if (digitalRead(pinUp) == LOW) { // Sjekker om bryteren vippes opp
+    gain = min(gain + step, maxGain); // Øker verdien, men ikke over maxGain
+    delay(200); // Debounce
+  }
+
+  if (digitalRead(pinDown) == LOW) { // Sjekker om bryteren vippes ned
+    gain = max(gain - step, minGain); // Senker verdien, men ikke under minGain
+    delay(200); // Debounce
+  }
+
+  //Buttons
   int button_surface_read = digitalRead(button_surface_pin);
   int button_openclose_read = digitalRead(button_openclose_pin);
+  int button_1_read = !digitalRead(button_1_pin);
+  int button_inn_read = !digitalRead(button_inn_pin);
 
   if (button_surface_read == LOW && last_button_surface_state == HIGH)
   {
-      button_surface = !button_surface;
-      delay(50);
+    button_surface = !button_surface;
+    delay(50);
   }
   last_button_surface_state = button_surface_read;
 
   if (button_openclose_read == LOW && last_button_openclose_state == HIGH)
   {
-      button_openclose = !button_openclose;
-      delay(50);
+    button_openclose = !button_openclose;
+    delay(50);
   }
   last_button_openclose_state = button_openclose_read;
 
+  // X, Y and Z movement
   int xHallValue = analogRead(xHallPin);
   int yHallValue = analogRead(yHallPin);
   int zHallValue = analogRead(zHallPin);
@@ -121,9 +148,13 @@ void loop()
   float roll = mapping_function(rollHallValue, rollRawMin, rollRawMax, rollZero, deadZoneSize, curveCoefficient);
   float yaw = mapping_function(yawHallValue, yawRawMin, yawRawMax, yawZero, deadZoneSize, curveCoefficient);
 
+  //debug_print(xHallValue, x);
+
+  //Serial.print(button_surface_read);
+
   float thrust[6] = {x, y, z, pitch, roll, yaw};
 
-  StaticJsonDocument<200> doc;
+  StaticJsonDocument<512> doc;
   JsonArray thrustArray = doc.createNestedArray("Thrust");
 
   for (int i = 0; i < 6; i++)
@@ -135,6 +166,8 @@ void loop()
   JsonObject buttons = doc.createNestedObject("Buttons");
   buttons["button_openclose_arm"] = button_openclose;
   buttons["button_surface"] = button_surface;
+  buttons["button_1"] = button_1_read;
+  buttons["button_inn"] = button_inn_read;
 
   serializeJson(doc, Serial);
   Serial.println();
